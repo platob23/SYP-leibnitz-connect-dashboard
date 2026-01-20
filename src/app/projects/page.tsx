@@ -73,8 +73,6 @@ export default function Page() {
                             {project.id}
                         </td>
 
-
-                        {/* STATUS → NUR TEXT */}
                         <td className="px-4 py-3">
                             {project.status}
                         </td>

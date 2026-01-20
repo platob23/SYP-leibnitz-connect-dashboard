@@ -91,7 +91,7 @@ function AppSidebar() {
                                 <SidebarMenuSub>
                                     <SidebarMenuSubItem>
                                         <SidebarMenuSubButton asChild>
-                                            <Link href="/#">
+                                            <Link href="http://localhost:3000/documentation">
                                                 <BookText />
                                                 Documentation
                                             </Link>
