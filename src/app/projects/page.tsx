@@ -1,38 +1,47 @@
-import React from "react";
-import {AccessibilityIcon, Badge, CheckIcon, ChevronDown} from "lucide-react";
+'use client'
 
+import React, { useEffect, useState } from 'react'
+import {
+    AccessibilityIcon,
+    CheckIcon,
+    ChevronDown,
+} from 'lucide-react'
 
-const projects = [
-    {
-        projektID: "06c17747f3d46ad90a8",
-        status: "veröffentlicht",
-        kategorie: "Natur",
-        erstellungsdatum: "Mar 23, 2022, 13:00 PM",
-        zuletztBearbeitetVon: "Tobias P.",
-    },
-    {
-        projektID: "06c1774-7f3d-46ad-90a8",
-        status: "hochladen",
-        kategorie: "Bildung",
-        erstellungsdatum: "Mar 23, 2022, 13:00 PM",
-        zuletztBearbeitetVon: "Tobias P.",
-    },
-    {
-        projektID: "06c1774-7f3d-46ad-90a8",
-        status: "in bearbeitung",
-        kategorie: "Bauen",
-        erstellungsdatum: "Mar 23, 2022, 13:00 PM",
-        zuletztBearbeitetVon: "Tobias P.",
-    },
-];
-
-const statusConfig: Record<string, string> = {
-    veröffentlicht: "bg-green-100 text-green-700",
-    hochladen: "bg-yellow-100 text-yellow-700",
-    in_bearbeitung: "bg-indigo-100 text-indigo-700",
-};
+type Project = {
+    id: string
+    status: string
+    category_id: string | null
+    created_at: string
+    updated_at: string
+}
 
 export default function Page() {
+    const [projects, setProjects] = useState<Project[]>([])
+    const [error, setError] = useState<string | null>(null)
+
+    useEffect(() => {
+        fetch('/api/projects')
+            .then(res => {
+                if (!res.ok) throw new Error('Failed to load projects')
+                return res.json()
+            })
+            .then(data => {
+                if (Array.isArray(data)) {
+                    setProjects(data)
+                } else {
+                    throw new Error('Invalid response')
+                }
+            })
+            .catch(err => {
+                console.error(err)
+                setError(err.message)
+            })
+    }, [])
+
+    if (error) {
+        return <p className="text-red-500">Error: {error}</p>
+    }
+
     return (
         <div className="rounded-lg border bg-background">
             <table className="w-full text-sm">
@@ -45,15 +54,15 @@ export default function Page() {
                     <th className="px-4 py-3">STATUS</th>
                     <th className="px-4 py-3">KATEGORIE</th>
                     <th className="px-4 py-3">ERSTELLUNGSDATUM</th>
-                    <th className="px-4 py-3">ZUL. BEARBEITET VON</th>
+                    <th className="px-4 py-3">ZUL. BEARBEITET</th>
                     <th className="px-4 py-3 text-right"></th>
                 </tr>
                 </thead>
 
                 <tbody>
-                {projects.map((project, index) => (
+                {projects.map(project => (
                     <tr
-                        key={index}
+                        key={project.id}
                         className="border-b last:border-b-0 hover:bg-muted/30"
                     >
                         <td className="px-4 py-3">
@@ -61,28 +70,25 @@ export default function Page() {
                         </td>
 
                         <td className="px-4 py-3 font-mono text-sm">
-                            {project.projektID.slice(0, 8)}...
+                            {project.id}
                         </td>
 
+
+                        {/* STATUS → NUR TEXT */}
                         <td className="px-4 py-3">
-                            <Badge
-                                variant="secondary"
-                                className={statusConfig[project.status]}
-                            >
-                                {project.status}
-                            </Badge>
+                            {project.status}
                         </td>
 
                         <td className="px-4 py-3 font-medium">
-                            {project.kategorie}
+                            {project.category_id ?? '-'}
                         </td>
 
                         <td className="px-4 py-3 text-muted-foreground">
-                            {project.erstellungsdatum}
+                            {new Date(project.created_at).toLocaleDateString()}
                         </td>
 
-                        <td className="px-4 py-3">
-                            {project.zuletztBearbeitetVon}
+                        <td className="px-4 py-3 text-muted-foreground">
+                            {new Date(project.updated_at).toLocaleDateString()}
                         </td>
 
                         <td className="px-4 py-3 text-right">
@@ -93,5 +99,5 @@ export default function Page() {
                 </tbody>
             </table>
         </div>
-    );
+    )
 }
