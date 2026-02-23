@@ -51,6 +51,7 @@ export async function GET() {
     }
 
     const projects = (data ?? []).map((p: any) => ({
+        id: p.id,
         titel: p.titel,
         category: p.Category?.name ?? null,
         status: p.Status?.name ?? null,
@@ -59,4 +60,25 @@ export async function GET() {
     }))
 
     return NextResponse.json(projects)
+}
+
+export async function DELETE(req: NextRequest) {
+    const body = await req.json()
+    const { ids } = body
+
+    if (!Array.isArray(ids) || ids.length === 0) {
+        return NextResponse.json({ error: 'Keine IDs angegeben' }, { status: 400 })
+    }
+
+    const { error } = await supabase
+        .from('Project')
+        .delete()
+        .in('id', ids)
+
+    if (error) {
+        console.error(error)
+        return NextResponse.json({ error: error.message }, { status: 500 })
+    }
+
+    return NextResponse.json({ deleted: ids.length })
 }
