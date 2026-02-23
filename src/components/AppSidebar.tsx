@@ -28,22 +28,32 @@ import Link from "next/link";
 import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/components/ui/dropdown-menu";
 import Image from "next/image";
 
-const items = [
+type NavItem = {
+    title: string
+    url: string
+    icon: React.ReactNode
+    subItems?: { title: string; url: string; icon: React.ReactNode }[]
+}
+
+const items: NavItem[] = [
     {
         title: "Home",
-        url: "http://localhost:3000/",
+        url: "/",
         icon: <HomeIcon/>,
     },
     {
         title: "Analysen",
-        url: "http://localhost:3000/analysis",
+        url: "/analysis",
         icon: <ChartLine/>,
     },
     {
         title: "Projekte",
-        url: "http://localhost:3000/projects",
+        url: "/projects",
         icon: <SquareChartGanttIcon/>,
-    }
+        subItems: [
+            { title: "Neues Projekt", url: "/projects/new", icon: <Plus/> },
+        ],
+    },
 ]
 
 function AppSidebar() {
@@ -75,7 +85,20 @@ function AppSidebar() {
                                             <span>{item.title}</span>
                                         </Link>
                                     </SidebarMenuButton>
-
+                                    {item.subItems && (
+                                        <SidebarMenuSub>
+                                            {item.subItems.map(sub => (
+                                                <SidebarMenuSubItem key={sub.title}>
+                                                    <SidebarMenuSubButton asChild>
+                                                        <Link href={sub.url}>
+                                                            {sub.icon}
+                                                            {sub.title}
+                                                        </Link>
+                                                    </SidebarMenuSubButton>
+                                                </SidebarMenuSubItem>
+                                            ))}
+                                        </SidebarMenuSub>
+                                    )}
                                 </SidebarMenuItem>
                             ))}
                         </SidebarMenu>
@@ -91,7 +114,7 @@ function AppSidebar() {
                                 <SidebarMenuSub>
                                     <SidebarMenuSubItem>
                                         <SidebarMenuSubButton asChild>
-                                            <Link href="/#">
+                                            <Link href="http://localhost:3000/documentation">
                                                 <BookText />
                                                 Documentation
                                             </Link>
