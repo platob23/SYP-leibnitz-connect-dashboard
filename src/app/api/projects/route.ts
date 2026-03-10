@@ -2,20 +2,40 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
 
 export async function POST(req: NextRequest) {
-    const body = await req.json()
-    const { titel, category_id, status_id, start_date } = body
+    const formData = await req.formData()
+
+    const titel = formData.get('titel') as string | null
+    const text = formData.get('text') as string | null
+    const largeDescription = formData.get('large_description') as string | null
+    const categoryId = formData.get('category_id') as string | null
+    const statusId = formData.get('status_id') as string | null
+    const imageFile = formData.get('image') as File | null
 
     if (!titel?.trim()) {
         return NextResponse.json({ error: 'Titel ist erforderlich' }, { status: 400 })
+    }
+    if (!categoryId) {
+        return NextResponse.json({ error: 'Kategorie ist erforderlich' }, { status: 400 })
+    }
+
+    let imageData: string | null = null
+    if (imageFile && imageFile.size > 0) {
+        const arrayBuffer = await imageFile.arrayBuffer()
+        const buffer = Buffer.from(arrayBuffer)
+        imageData = `\\x${buffer.toString('hex')}`
     }
 
     const { data, error } = await supabase
         .from('Project')
         .insert({
             titel: titel.trim(),
-            category_id: category_id ?? null,
-            status_id: status_id ?? null,
-            start_date: start_date ?? null,
+            text: text?.trim() || null,
+            large_description: largeDescription?.trim() || null,
+            category_id: Number(categoryId),
+            status_id: statusId ? Number(statusId) : null,
+            image: imageData,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
         })
         .select()
         .single()
@@ -51,6 +71,7 @@ export async function GET() {
     }
 
     const projects = (data ?? []).map((p: any) => ({
+        id: p.id,
         titel: p.titel,
         category: p.Category?.name ?? null,
         status: p.Status?.name ?? null,
@@ -59,4 +80,25 @@ export async function GET() {
     }))
 
     return NextResponse.json(projects)
+}
+
+export async function DELETE(req: NextRequest) {
+    const body = await req.json()
+    const { ids } = body
+
+    if (!Array.isArray(ids) || ids.length === 0) {
+        return NextResponse.json({ error: 'Keine IDs angegeben' }, { status: 400 })
+    }
+
+    const { error } = await supabase
+        .from('Project')
+        .delete()
+        .in('id', ids)
+
+    if (error) {
+        console.error(error)
+        return NextResponse.json({ error: error.message }, { status: 500 })
+    }
+
+    return NextResponse.json({ deleted: ids.length })
 }
