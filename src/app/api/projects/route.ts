@@ -54,6 +54,7 @@ export async function GET() {
         .select(`
       id,
       titel,
+      image,
       created_at,
       updated_at,
       Category (
@@ -70,14 +71,23 @@ export async function GET() {
         return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    const projects = (data ?? []).map((p: any) => ({
-        id: p.id,
-        titel: p.titel,
-        category: p.Category?.name ?? null,
-        status: p.Status?.name ?? null,
-        created_at: p.created_at,
-        updated_at: p.updated_at,
-    }))
+    const projects = (data ?? []).map((p: any) => {
+        let imageBase64: string | null = null
+        if (p.image) {
+            // Supabase returns bytea as "\xdeadbeef..." — strip the \x prefix and convert to base64
+            const hex = typeof p.image === 'string' ? p.image.replace(/^\\x/, '') : Buffer.from(p.image).toString('hex')
+            imageBase64 = `data:image/jpeg;base64,${Buffer.from(hex, 'hex').toString('base64')}`
+        }
+        return {
+            id: p.id,
+            titel: p.titel,
+            image: imageBase64,
+            category: p.Category?.name ?? null,
+            status: p.Status?.name ?? null,
+            created_at: p.created_at,
+            updated_at: p.updated_at,
+        }
+    })
 
     return NextResponse.json(projects)
 }
