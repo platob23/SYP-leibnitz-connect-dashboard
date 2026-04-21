@@ -32,7 +32,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Params }) {
     const formData = await req.formData()
 
     const titel = formData.get('titel') as string | null
-    const text = formData.get('text') as string | null
+    const text = formData.get(x 'text') as string | null
     const largeDescription = formData.get('large_description') as string | null
     const categoryId = formData.get('category_id') as string | null
     const statusId = formData.get('status_id') as string | null
