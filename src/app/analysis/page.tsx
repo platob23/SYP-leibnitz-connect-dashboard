@@ -20,7 +20,7 @@ export default function AnalysisPage() {
 
     useEffect(() => {
         fetch('/api/projects/per-month').then(r => r.json()).then(setData).catch(() => {})
-        fetch('/api/formulars').then(r => r.json()).then(d => setFormulars(d.slice(0, 5))).catch(() => {})
+        fetch('/api/formulars').then(r => r.json()).then(d => setFormulars(d.slice(0, 3))).catch(() => {})
     }, [])
 
     const year = new Date().getFullYear()
